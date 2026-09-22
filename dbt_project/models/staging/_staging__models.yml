@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_customers
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_events
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_participants
+    columns:
+      - name: participant_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_bets
+    columns:
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: user_id
+      - name: event_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_events')
+                field: event_id
