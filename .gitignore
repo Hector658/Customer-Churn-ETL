@@ -4,4 +4,5 @@ __pycache__/
 dbt_packages/
 logs/
 .venv/
-
+venv/
+data/
