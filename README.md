@@ -1,4 +1,4 @@
-\# Customer Churn ETL Pipeline
+# Customer Churn ETL Pipeline
 
 
 
@@ -10,7 +10,7 @@ This project is a companion to a churn analysis EDA originally done in R — see
 
 
 
-\## Architecture
+## Architecture
 
 
 
@@ -34,29 +34,29 @@ flowchart LR
 
 
 
-\- \*\*Extract\*\*: a Python script reads synthetic parquet files and loads them into a `raw` schema in Postgres.
+\- **Extract**: a Python script reads synthetic parquet files and loads them into a `raw` schema in Postgres.
 
-\- \*\*Transform (staging)\*\*: dbt models clean and standardize each raw table into a `staging` schema, with automated data quality tests (uniqueness, non-null keys, referential integrity).
+\- **Transform (staging)**: dbt models clean and standardize each raw table into a `staging` schema, with automated data quality tests (uniqueness, non-null keys, referential integrity).
 
-\- \*\*Transform (marts)\*\*: dbt models build business-ready tables in a `marts` schema — per-customer features, monthly activity trends, and cohort retention — ready for analysis, dashboards, or downstream ML.
-
-
-
-\## Tech stack
+\- **Transform (marts)**: dbt models build business-ready tables in a `marts` schema — per-customer features, monthly activity trends, and cohort retention — ready for analysis, dashboards, or downstream ML.
 
 
 
-\- \*\*PostgreSQL 16\*\* (via Docker) — the data warehouse
-
-\- \*\*Python\*\* (pandas, SQLAlchemy, psycopg2) — the extract/load step
-
-\- \*\*dbt-postgres\*\* — transformations, testing, and documentation
-
-\- \*\*Docker Compose\*\* — reproducible local environment
+## Tech stack
 
 
 
-\## Project structure
+\- **PostgreSQL 16** (via Docker) — the data warehouse
+
+\- **Python** (pandas, SQLAlchemy, psycopg2) — the extract/load step
+
+\- **dbt-postgres** — transformations, testing, and documentation
+
+\- **Docker Compose** — reproducible local environment
+
+
+
+## Project structure
 
 
 ## Setup
