@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from dagster import asset
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect, text
 
@@ -14,14 +15,6 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 RAW_DATA_DIR = Path(os.getenv("RAW_DATA_DIR"))
-
-# Table name -> parquet file name
-TABLES = {
-    "customers": "customers.parquet",
-    "bets": "bets.parquet",
-    "events": "events.parquet",
-    "participants": "participants.parquet",
-}
 
 
 def get_engine():
@@ -35,16 +28,19 @@ def drop_array_columns(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
         if df[col].apply(lambda x: isinstance(x, (list, np.ndarray))).any()
     ]
     if array_columns:
-        print(f"  Skipping array-type column(s) in {table_name}: {array_columns}")
         df = df.drop(columns=array_columns)
     return df
 
 
-def load_table(engine, table_name: str, file_name: str) -> None:
+def load_table(table_name: str, file_name: str) -> int:
+    engine = get_engine()
     file_path = RAW_DATA_DIR / file_name
-    print(f"Reading {file_path}...")
     df = pd.read_parquet(file_path)
     df = drop_array_columns(df, table_name)
+
+    with engine.connect() as conn:
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
+        conn.commit()
 
     inspector = inspect(engine)
     table_exists = inspector.has_table(table_name, schema="raw")
@@ -56,21 +52,24 @@ def load_table(engine, table_name: str, file_name: str) -> None:
     else:
         df.to_sql(table_name, engine, schema="raw", if_exists="replace", index=False, chunksize=5000)
 
-    print(f"Done: raw.{table_name}")
+    return len(df)
 
 
-def main():
-    engine = get_engine()
-
-    with engine.connect() as conn:
-        conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
-        conn.commit()
-
-    for table_name, file_name in TABLES.items():
-        load_table(engine, table_name, file_name)
-
-    print("All tables loaded successfully.")
+@asset
+def raw_customers() -> int:
+    return load_table("customers", "customers.parquet")
 
 
-if __name__ == "__main__":
-    main()
+@asset
+def raw_bets() -> int:
+    return load_table("bets", "bets.parquet")
+
+
+@asset
+def raw_events() -> int:
+    return load_table("events", "events.parquet")
+
+
+@asset
+def raw_participants() -> int:
+    return load_table("participants", "participants.parquet")
